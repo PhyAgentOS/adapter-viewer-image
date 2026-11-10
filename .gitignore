@@ -4,3 +4,8 @@ examples/**/out/
 
 /examples/forge2_image_chain/.venv/
 /examples/forge2_image_chain/report.json
+
+# Python example caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
