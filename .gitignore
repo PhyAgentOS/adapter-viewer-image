@@ -1,3 +1,6 @@
 target/
 dist/
 examples/**/out/
+
+/examples/forge2_image_chain/.venv/
+/examples/forge2_image_chain/report.json

@@ -1,0 +1,19 @@
+nodes:
+  - id: sender
+    path: python3
+    args: image_stream.py send --width 640 --height 480
+    inputs:
+      tick: dora/timer/millis/33
+    outputs: [rgb, depth]
+  - id: checker
+    path: python3
+    args: image_stream.py check --width 640 --height 480 --min-frames 30 --report report.json
+    inputs:
+      rgb:
+        source: sender/rgb
+        queue_size: 1
+        queue_policy: drop_oldest
+      depth:
+        source: sender/depth
+        queue_size: 1
+        queue_policy: drop_oldest
