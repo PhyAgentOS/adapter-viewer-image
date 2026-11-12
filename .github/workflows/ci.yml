@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: PhyAgentOS/adapter-forge-gateway
-          ref: c02ac097a636de9a2bc2b4656962aa11c610dbb9
+          ref: c0f5f43812e59e64d666561753b58509c0812301
           path: .test-gateway
       - uses: astral-sh/setup-uv@v7
         with:

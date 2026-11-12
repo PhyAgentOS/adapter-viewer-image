@@ -1,0 +1,93 @@
+{
+  "repository": "adapter-viewer-image",
+  "round": "msgs-2.1.0 alignment / 2026-11-12",
+  "breaking_change": "Forge 1.x / Dora 0.4.x to Forge 2.x / Dora 1.x requires aligned Forge packages, runtime services, node peers and rebuilt artifacts. Forge families version independently. forge_msgs.v1 remains unchanged.",
+  "changes": [
+    "Update paired README deployment/version compatibility notice",
+    "Keep published Rust forge_msgs 2.0.0 / Dora 1.0.1 crate baseline; no unavailable Rust 2.1.0 pin",
+    "Update generated image fixture to Python Msgs 2.1.0 and pin CI Gateway to the updated reviewed fork commit."
+  ],
+  "lock_updates": [],
+  "lock_checks": [],
+  "software_tests": {
+    "repo": "adapter-viewer-image",
+    "rust_tests": "46 Rust tests and 7 Python fixture tests passed",
+    "scope": "Cargo tests; fixture tests use a separate exact requirements environment."
+  },
+  "dependency_audit": {
+    "scope": "Python runtime audit not applicable to Rust node; prior RustSec scope unchanged."
+  },
+  "dora_run_records": [
+    {
+      "entry": "viewer",
+      "mode": "single",
+      "command": [
+        "${WORKSPACE}/.test-env/bin/dora",
+        "run",
+        "${WORKSPACE}/validation/downstream-msgs210-20261112/review-single/viewer/dataflow.yaml",
+        "--stop-after",
+        "4s"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.091,
+      "passed": true,
+      "expected_negative_confirmed": null,
+      "scope": "Standalone startup/timer/normal stop only; no images or visual assertion.",
+      "repo": "adapter-viewer-image",
+      "source_report": "review-single/viewer/report.json",
+      "runtime_errors": [],
+      "local_evidence": "Full original Dora log is retained under validation/downstream-msgs210-20261112/review-single/viewer/dora.log"
+    },
+    {
+      "command": [
+        "${WORKSPACE}/.test-env/bin/dora",
+        "run",
+        "${WORKSPACE}/validation/downstream-msgs210-20261112/image-chain/dataflow.yaml",
+        "--stop-after",
+        "10s"
+      ],
+      "includes_gateway": true,
+      "passed": true,
+      "viewer_included": true,
+      "rust_sinks_included": true,
+      "gateway_images": {
+        "image/rgb": {
+          "shape": [
+            480,
+            640,
+            3
+          ],
+          "format": "jpeg"
+        },
+        "image/depth": {
+          "shape": [
+            480,
+            640
+          ],
+          "format": "jpeg"
+        }
+      },
+      "exit_code": 0,
+      "checker": {
+        "passed": true,
+        "counts": {
+          "rgb": 284,
+          "depth": 284
+        },
+        "elapsed_seconds": 9.729441124945879,
+        "max_fixture_latency_ms": 24.139,
+        "error": null
+      },
+      "mode": "chain",
+      "entry": "generated-images-viewer-rust-sinks-gateway",
+      "scope": "Generated 640x480 RGB/depth, Viewer and two Rust sinks plus Gateway, 10 seconds. No physical camera, hardware or sustained-run acceptance.",
+      "source_report": "image-chain/chain-report.json",
+      "repo": "adapter-viewer-image",
+      "local_evidence": "Full original Dora log is retained under validation/downstream-msgs210-20261112/image-chain/dora.log"
+    }
+  ],
+  "remaining": "Applicable actual hardware/model, final supported-platform artifacts, sustained run and rollback acceptance remain pending.",
+  "acceptance": "Pending; software checks, fake/dummy backends and negative prerequisite records are scoped evidence only. Every new multi-node graph contains adapter-forge-gateway.",
+  "gitlab_sync": "Not performed; follows completed acceptance.",
+  "log_publication": "Original logs remain in the local validation workspace. This public report publishes reviewed commands, outcomes, assertions and limitations only."
+}
