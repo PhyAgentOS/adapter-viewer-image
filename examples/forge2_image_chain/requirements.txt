@@ -1,0 +1,8 @@
+dora-rs==1.0.1
+dora-rs-cli==1.0.1
+forge-msgs==2.1.0
+numpy==2.5.4
+pyarrow==23.0.1
+pytest==9.2.0
+pyyaml==6.0.3
+websockets==16.0

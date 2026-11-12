@@ -467,7 +467,7 @@ fn run_dora_thread(
     stop: Arc<AtomicBool>,
     egui_ctx: egui::Context,
     observer: Option<Arc<forge_common::observability::Observer>>,
-) {
+) -> eyre::Result<()> {
     let wake = || egui_ctx.request_repaint_of(egui::ViewportId::ROOT);
     let pending = Arc::new(latest::LatestMailbox::new(
         MAX_INPUTS,
@@ -493,7 +493,9 @@ fn run_dora_thread(
                     pending.close();
                     ctx.request_repaint_of(egui::ViewportId::ROOT);
                     eprintln!("[image_viewer] decode worker thread panicked");
+                    return Err(eyre::eyre!("decode worker panicked"));
                 }
+                Ok(())
             })
     };
     let decoder = match decoder {
@@ -502,10 +504,11 @@ fn run_dora_thread(
             stop.store(true, Ordering::Relaxed);
             wake();
             eprintln!("[image_viewer] failed to start decode worker: {error}");
-            return;
+            return Err(eyre::eyre!("failed to start decode worker: {error}"));
         }
     };
 
+    let mut runtime_error = None;
     let mut input_limit_warned = false;
     let mut pending_limit_warned = false;
     let mut replaced = 0_u64;
@@ -560,7 +563,7 @@ fn run_dora_thread(
             }
             Event::Stop(_) => break,
             Event::Error(msg) => {
-                eprintln!("[image_viewer] error: {msg}");
+                runtime_error = Some(msg);
                 break;
             }
             _ => {}
@@ -571,7 +574,13 @@ fn run_dora_thread(
     eprintln!("[image_viewer] latest-only replaced_before_decode={replaced}");
     wake();
     // Notify the UI before waiting for in-flight work; never decode the backlog on stop.
-    let _ = decoder.join();
+    decoder
+        .join()
+        .map_err(|_| eyre::eyre!("decode worker panicked"))??;
+    if let Some(error) = runtime_error {
+        return Err(eyre::eyre!("Dora error: {error}"));
+    }
+    Ok(())
 }
 
 fn install_shutdown_signal_handler(stop: Arc<AtomicBool>, egui_ctx: egui::Context) {
@@ -883,6 +892,8 @@ fn run(cli: CliArgs) -> eyre::Result<()> {
         ..Default::default()
     };
 
+    let failed = Arc::new(AtomicBool::new(false));
+    let failed_ui = Arc::clone(&failed);
     let stop_ui = Arc::clone(&stop);
     eframe::run_native(
         "image_viewer",
@@ -893,6 +904,7 @@ fn run(cli: CliArgs) -> eyre::Result<()> {
             let stop_bg = Arc::clone(&stop_ui);
             let settings_clone = settings.clone();
             let frames_bg = Arc::clone(&frames);
+            let failed_worker = Arc::clone(&failed_ui);
             let worker = std::thread::Builder::new()
                 .name("image-viewer-dora".to_owned())
                 .spawn(move || {
@@ -907,10 +919,11 @@ fn run(cli: CliArgs) -> eyre::Result<()> {
                             stop_bg,
                             egui_ctx,
                             observer,
-                        );
+                        )
                     }));
-                    if result.is_err() {
-                        eprintln!("[image_viewer] Dora worker thread panicked");
+                    if !matches!(result, Ok(Ok(()))) {
+                        failed_worker.store(true, Ordering::Relaxed);
+                        eprintln!("[image_viewer] Dora worker failed: {result:?}");
                         panic_stop.store(true, Ordering::Relaxed);
                         panic_ctx.request_repaint_of(egui::ViewportId::ROOT);
                     }
@@ -924,6 +937,9 @@ fn run(cli: CliArgs) -> eyre::Result<()> {
     .map_err(|e| eyre::eyre!("eframe: {e}"))?;
 
     stop.store(true, Ordering::Relaxed);
+    if failed.load(Ordering::Relaxed) {
+        eyre::bail!("Dora image worker failed");
+    }
     Ok(())
 }
 
