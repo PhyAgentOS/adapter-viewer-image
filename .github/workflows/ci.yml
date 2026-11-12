@@ -70,15 +70,29 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Check out reviewed Gateway test dependency
+        uses: actions/checkout@v5
+        with:
+          repository: PhyAgentOS/adapter-forge-gateway
+          ref: c02ac097a636de9a2bc2b4656962aa11c610dbb9
+          path: .test-gateway
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.13.7"
+      - name: Install frozen Gateway test environment
+        run: uv sync --project .test-gateway --frozen --no-dev
       - name: Install pinned image fixture dependencies
         working-directory: examples/forge2_image_chain
         run: python -m pip install -r requirements.txt
       - name: Check frame validation
         working-directory: examples/forge2_image_chain
-        run: python -m pytest test_image_stream.py -q
+        run: python -m pytest test_image_stream.py test_run_chain.py -q
       - name: Run real Dora image transport
         working-directory: examples/forge2_image_chain
         run: |
-          dora validate dataflow.yaml
-          dora run dataflow.yaml --stop-after 10s
-          python -c 'import json; assert json.load(open("report.json"))["passed"]'
+          python run_chain.py --gateway-root ../../.test-gateway --output ../../build/gateway-chain
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: viewer-gateway-chain
+          path: build/gateway-chain/

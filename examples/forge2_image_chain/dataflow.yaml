@@ -1,3 +1,4 @@
+# Template: run_chain.py supplies absolute paths and the mandatory Gateway node.
 nodes:
   - id: sender
     path: python3

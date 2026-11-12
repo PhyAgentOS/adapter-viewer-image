@@ -9,11 +9,20 @@
 python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
-python -m pytest test_image_stream.py -q
-dora validate dataflow.yaml
-dora run dataflow.yaml --stop-after 10s
-cat report.json
+python -m pytest test_image_stream.py test_run_chain.py -q
+uv sync --project /path/to/adapter-forge-gateway --frozen --no-dev
+python run_chain.py --gateway-root /path/to/adapter-forge-gateway
+cat build/gateway-chain/chain-report.json
 ```
+
+测试依赖使用已审查的 Forge 2 Gateway 源码（提交 `c02ac097a636de9a2bc2b4656962aa11c610dbb9`，
+CI 同样固定此版本）。`run_chain.py` 在模板中加入必需的 Gateway，校验后执行 Dora，
+并检查 Gateway WebSocket 的两路图像。输出包含实际数据流、`dora.log`、逐帧计数和最终报告。
+模板本身不是验收数据流。`--viewer-binary` 加入原生 GUI（需要桌面），
+`--usb-sink-binary` 加入 Rust RGB／深度接收端。CI 为无头检查，不代替 GUI 或相机真机验收。
+退出码为零并不足以判定通过：daemon 错误、超大消息和传输回复失败同样使报告失败。
+本机 640×480 多消费者检查中，部分运行触发 Dora 的 64 MiB 回复上限，后续运行正常；
+这一间歇问题仍未解决。
 
 `image_stream.py check` 支持 `--inputs rgb,depth`、`--min-frames`、可选的
 `--width`／`--height`、`--delay-ms` 和 `--report`。存在 `fixture_sequence`

@@ -10,7 +10,7 @@ Target node version: **2.1.3**. These changes are candidates pending the platfor
 hardware and sustained-stream acceptance gates below. A version declaration does not
 mean a stable release has been accepted.
 
-Dora worker and decoder failures now propagate to a failed process result. A deterministic RGB/depth sender and strict Python checker are provided in examples/forge2_image_chain.
+Dora worker and decoder failures now propagate to a failed process result. A deterministic RGB/depth sender and strict Python checker are provided in examples/forge2_image_chain. Its runner includes adapter-forge-gateway and verifies both WebSocket image streams while retaining the Dora run log.
 
 ## Runtime and platform
 

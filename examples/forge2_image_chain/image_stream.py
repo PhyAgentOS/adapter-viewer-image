@@ -12,7 +12,7 @@ from dora import Node
 from forge_msgs import CompressedImage, Image
 
 
-def validate_image(value, metadata):
+def validate_image(value, metadata, stream_id=None):
     try:
         image = Image.from_arrow(value)
     except (KeyError, TypeError, ValueError):
@@ -22,6 +22,10 @@ def validate_image(value, metadata):
         raise ValueError("empty image")
     sequence = metadata.get("fixture_sequence")
     if sequence is not None:
+        if stream_id == "rgb" and (pixels.dtype != np.uint8 or pixels.ndim != 3 or pixels.shape[2] != 3):
+            raise ValueError("fixture rgb requires uint8 RGB pixels")
+        if stream_id == "depth" and (pixels.dtype != np.float32 or pixels.ndim != 2):
+            raise ValueError("fixture depth requires float32 metric pixels")
         expected = (sequence % 251 if pixels.dtype == np.uint8 else (sequence % 100 + 1) / 100)
         if not np.allclose(pixels, expected, rtol=0, atol=1e-6):
             raise ValueError(f"image content differs from fixture sequence {sequence}")
@@ -60,7 +64,7 @@ def check(args):
             if event["type"] != "INPUT" or event["id"] not in counts:
                 continue
             metadata = event.get("metadata", {})
-            shape = validate_image(event["value"], metadata)
+            shape = validate_image(event["value"], metadata, event["id"])
             if args.width and shape[1] != args.width:
                 raise ValueError(f"unexpected width: {shape}")
             if args.height and shape[0] != args.height:

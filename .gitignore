@@ -9,3 +9,4 @@ examples/**/out/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+/build/gateway-chain/

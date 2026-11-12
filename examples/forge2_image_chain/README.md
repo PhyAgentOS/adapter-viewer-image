@@ -10,11 +10,22 @@ This validates transport without claiming hardware or Linux artifact acceptance.
 python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
-python -m pytest test_image_stream.py -q
-dora validate dataflow.yaml
-dora run dataflow.yaml --stop-after 10s
-cat report.json
+python -m pytest test_image_stream.py test_run_chain.py -q
+uv sync --project /path/to/adapter-forge-gateway --frozen --no-dev
+python run_chain.py --gateway-root /path/to/adapter-forge-gateway
+cat build/gateway-chain/chain-report.json
 ```
+
+Use the reviewed Forge 2 Gateway source (commit `c02ac097a636de9a2bc2b4656962aa11c610dbb9`,
+also pinned in CI) as a test dependency. `run_chain.py` renders `dataflow.yaml` with
+the mandatory Gateway node, validates it, runs Dora and checks both Gateway WebSocket
+image streams. It saves the rendered graph, `dora.log`, frame counters and the final
+report. The template alone is not the acceptance graph. `--viewer-binary` adds the
+native GUI (requires a desktop); `--usb-sink-binary` adds Rust RGB/depth receivers.
+CI runs headlessly and does not qualify the GUI or camera hardware paths.
+An exit code of zero is insufficient: daemon errors and oversized/failed transport
+replies also fail the report. During local multi-consumer 640×480 checks, some runs
+hit Dora's 64 MiB reply limit while later runs were clean; this remains unresolved.
 
 `image_stream.py check` accepts `--inputs rgb,depth`, `--min-frames`, optional
 `--width`/`--height`, `--delay-ms` and `--report`. Missing required streams and Dora

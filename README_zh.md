@@ -322,4 +322,4 @@ cargo audit
 
 最终发布归档须先在声明支持的平台完成验收，记录源码与归档、可执行文件校验值；通过后发布同一份包，重建后重新验收。Linux 发布包仍需 Linux 验证，其他平台的开发测试不代表其已通过。
 
-新增无硬件测试夹具，见 [图像链说明](examples/forge2_image_chain/README_zh.md)。Dora 工作线程和解码线程失败会使进程返回失败。
+新增无硬件测试夹具，见 [图像链说明](examples/forge2_image_chain/README_zh.md)。测试运行器包含 adapter-forge-gateway，检查两路 WebSocket 图像并保留 Dora 运行日志。Dora 工作线程和解码线程失败会使进程返回失败。
