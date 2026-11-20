@@ -1,3 +1,5 @@
+[简体中文](README_zh.md)
+
 # Image Viewer
 
 独立的 Rust/Dora 实时图像查看工具，基于 `eframe`/`egui` 显示一路或多路图像流。
@@ -255,3 +257,7 @@ cargo audit
 ## 许可证
 
 本项目由 X-ERA 以 Apache License 2.0 发布，完整文本见 `LICENSE`。依赖许可证在依赖变更和发布 review 中审计；项目许可证与源码材料由仓库及 GitHub 自动生成的 source archive 提供。
+
+## CI policy
+
+Automated dependency vulnerability audits are not maintained as CI or merge gates on this branch. Existing tests, builds, and other checks remain in place. Removing the audit gate does not change locked dependencies or resolve previously reported vulnerabilities.
